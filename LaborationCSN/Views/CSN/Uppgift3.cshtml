@@ -6,3 +6,41 @@
 }
 
 <h2>Uppgift 3 - Beviljade Tider</h2>
+
+<table table class="table-bordered table_50">
+    <thead>
+    <tr>
+        <th>
+            Startdatum 
+        </th>
+        <th>
+            Slutdatum
+        </th>
+        <th>
+            Typ
+        </th>
+        <th>
+            Summa
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var period in Model.Elements())
+    {
+        <tr>
+            <td>
+                @((string)period.Element("Startdatum"))
+            </td>
+            <td>
+                @((string)period.Element("Slutdatum"))
+            </td>
+            <td>
+                @((string)period.Element("Typ"))
+            </td>
+            <td>
+                @((string)period.Element("Belopp"))
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
