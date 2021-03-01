@@ -1,0 +1,63 @@
+﻿@using System.Web.UI.WebControls
+@using System.Xml.Linq
+@model XElement
+
+@{
+    ViewBag.Title = "Uppgift 1 - Utbetalningar per ärende";
+}
+
+<h2>Uppgift 1 - Utbetalningar per ärende</h2>
+
+
+@foreach (var arende in Model.Elements())
+{
+    <h1>Ärende @(arende.FirstAttribute.Value)</h1>
+    <h3>Bidrag: @(arende.Element("Beskrivning").Value)</h3>
+    <table table class="table-bordered table_50">
+        <thead>
+        <tr>
+            <th>
+                Datum 
+            </th>
+            <th>
+                Status
+            </th>
+            <th>
+                Summa
+            </th>
+        </tr>
+        </thead>
+        @foreach (var utbetalning in arende.Elements())
+        {
+            <tr>
+                <td>
+                    @((string)utbetalning.Element("UtbetDatum"))
+                </td>
+                <td>
+                    @((string)utbetalning.Element("UtbetStatus"))
+                </td>
+                <td>
+                    @((string)utbetalning.Element("Belopp"))
+                </td>
+            </tr>
+        }
+        <tr>
+            <td><strong>Total Summa:</strong></td>
+            <td>
+                @((string)arende.Element("TotalSumma"))
+            </td>
+        </tr>
+        <tr>
+            <td><strong>Utbetald Summa:</strong></td>
+            <td>
+                @((string)arende.Element("UtbetaldSumma"))
+            </td>
+        </tr>
+        <tr>
+            <td> <strong> Kvarvarande Summa</strong></td>
+            <td>
+                @((string)arende.Element("KvarvarandeSumma"))
+            </td>
+        </tr>
+    </table>
+}
