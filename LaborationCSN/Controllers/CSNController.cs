@@ -99,6 +99,7 @@ namespace LaborationCSN.Controllers
             {
                 var arendeXElement = new XElement("Arende", new XAttribute("Arendenummer", group.Key));
                 group.ToList().ForEach(x=>arendeXElement.Add(x));
+                
                 var totalSumma = new XElement("TotalSumma",
                     arendeXElement.Descendants("Belopp")
                         .Select(x => (int) x)
@@ -145,6 +146,7 @@ namespace LaborationCSN.Controllers
                     LEFT JOIN UtbetaldTid_Belopp on UtbetaldTid_Belopp.UtbetaldTidID = UtbetaldTid.UtbetTidID
                     LEFT JOIN Belopp on Belopp.BeloppID = UtbetaldTid_Belopp.BeloppID
                     LEFT JOIN Beloppstyp on Beloppstyp.Beloppstypkod = Belopp.Beloppstypkod
+                    GROUP BY UtbetDatum,Beskrivning
                     ORDER BY Utbetalning.UtbetDatum
                     ";
             
@@ -161,16 +163,15 @@ namespace LaborationCSN.Controllers
                 var datumElement = new XElement("UtbetalningsDag", new XAttribute("Datum", group.Key));
                 group.ToList().ForEach(x=>datumElement.Add(x));
                 
-                var totalSumma = new XElement("TotalSumma",
+                var TotalSumma = new XElement("TotalSumma",
                     datumElement.Descendants("Belopp")
                         .Select(x => (int) x)
                         .Sum());
-                datumElement.Add(totalSumma);
+                datumElement.Add(TotalSumma);
                 result.Add(datumElement);
             }
-
-            Console.WriteLine(result.ToString());
-            return View();
+            
+            return View(result);
         }
 
         //
