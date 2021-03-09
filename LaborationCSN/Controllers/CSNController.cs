@@ -72,55 +72,54 @@ namespace LaborationCSN.Controllers
         //
         // GET: /Csn/Uppgift1
 
+
         public ActionResult Uppgift1()
         {
-            var query =
-                @"SELECT UtbetDatum as Datum, Beloppstyp.Beskrivning, sum(Belopp.Belopp*(UtbetaldTid.Sluttid - UtbetaldTid.StartTid+1)) as Belopp
-	                FROM Utbetalning
-	                LEFT JOIN Utbetalningsplan on Utbetalningsplan.UtbetPlanID = Utbetalning.UtbetPlanID
-	                LEFT JOIN Arende on Arende.Arendenummer = Utbetalningsplan.Arendenummer
-	                LEFT JOIN UtbetaldTid on UtbetaldTid.UtbetID = Utbetalning.UtbetID
-	                LEFT JOIN UtbetaldTid_Belopp on UtbetaldTid_Belopp.UtbetaldTidID = UtbetaldTid.UtbetTidID
-	                LEFT JOIN Belopp on Belopp.BeloppID = UtbetaldTid_Belopp.BeloppID
-	                LEFT JOIN Stodform on Stodform.Stodformskod = Arende.Stodformskod
-	                LEFT JOIN Beloppstyp on Beloppstyp.Beloppstypkod = Belopp.Beloppstypkod
-	                GROUP BY Utbetalning.UtbetDatum,Belopp.Beloppstypkod
-	                ORDER BY Utbetalning.UtbetDatum";
+            string query =
+                @"SELECT Arende.Arendenummer, Stodform.Beskrivning, Utbetalning.UtbetDatum, Utbetalning.UtbetStatus, sum(Belopp.Belopp*(UtbetaldTid.Sluttid - UtbetaldTid.StartTid+1)) as Belopp
+                            FROM Utbetalning
+                            LEFT JOIN Utbetalningsplan on Utbetalningsplan.UtbetPlanID = Utbetalning.UtbetPlanID
+                            LEFT JOIN Arende on Arende.Arendenummer = Utbetalningsplan.Arendenummer
+                            LEFT JOIN UtbetaldTid on UtbetaldTid.UtbetID = Utbetalning.UtbetID
+                            LEFT JOIN UtbetaldTid_Belopp on UtbetaldTid_Belopp.UtbetaldTidID = UtbetaldTid.UtbetTidID
+                            LEFT JOIN Belopp on Belopp.BeloppID = UtbetaldTid_Belopp.BeloppID
+                            LEFT JOIN Stodform on Stodform.Stodformskod = Arende.Stodformskod
+                            GROUP BY Arende.Arendenummer,Utbetalning.UtbetDatum
+                            ORDER BY Arende.Arendenummer";
             
-            var raw = SQLResult(query, "AllArenden", "Utbetalning");
+            XElement raw = SQLResult(query, "AllArenden", "Utbetalning");
 
             var groups = raw.Descendants("Utbetalning")
                 .GroupBy(x => (string)x.Element("Arendenummer"))
                 .ToList();
 
-            var result = new XElement("UtbetalningarPerArende");
+            XElement result = new XElement("UtbetalningarPerArende");
             
             foreach (var group in groups)
             {
-                var arendeXElement = new XElement("Arende", new XAttribute("Arendenummer", group.Key));
+                XElement arendeXElement = new XElement("Arende", new XAttribute("Arendenummer", group.Key));
                 group.ToList().ForEach(x=>arendeXElement.Add(x));
-                
-                var totalSumma = new XElement("TotalSumma",
+                XElement totalSumma = new XElement("TotalSumma",
                     arendeXElement.Descendants("Belopp")
                         .Select(x => (int) x)
                         .Sum());
                 arendeXElement.Add(totalSumma);
                 
-                var UtbetaldSumma = new XElement("UtbetaldSumma",
+                XElement UtbetaldSumma = new XElement("UtbetaldSumma",
                     arendeXElement.Elements()
                         .Where(el => el.Element("UtbetStatus")?.Value == "Utbetald")
                         .Select(el => (int) el.Element("Belopp"))
                         .Sum());
                 arendeXElement.Add(UtbetaldSumma);
                 
-                var KvarvarandeSumma = new XElement("KvarvarandeSumma",
+                XElement KvarvarandeSumma = new XElement("KvarvarandeSumma",
                     arendeXElement.Elements()
                         .Where(el => el.Element("UtbetStatus")?.Value == "Planerad")
                         .Select(el => (int) el.Element("Belopp"))
                         .Sum());
                 arendeXElement.Add(KvarvarandeSumma);
 
-                var Beskrivning = new XElement("Beskrivning", arendeXElement.Descendants("Beskrivning").First().Value);
+                XElement Beskrivning = new XElement("Beskrivning", arendeXElement.Descendants("Beskrivning").First().Value);
                 arendeXElement.Add(Beskrivning);
                 
                 result.Add(arendeXElement);
@@ -132,23 +131,25 @@ namespace LaborationCSN.Controllers
         }
 
 
+
         //
         // GET: /Csn/Uppgift2
 
         public ActionResult Uppgift2()
         {
+            
+            var query = @"SELECT Utbetalning.UtbetDatum, Beloppstyp.Beskrivning, sum(Belopp.Belopp*(UtbetaldTid.Sluttid - UtbetaldTid.StartTid+1)) as Belopp
+                            FROM Utbetalning
+                            LEFT JOIN Utbetalningsplan on Utbetalningsplan.UtbetPlanID = Utbetalning.UtbetPlanID
+                            LEFT JOIN UtbetaldTid on UtbetaldTid.UtbetID = Utbetalning.UtbetID
+                            LEFT JOIN UtbetaldTid_Belopp on UtbetaldTid_Belopp.UtbetaldTidID = UtbetaldTid.UtbetTidID
+                            LEFT JOIN Belopp on Belopp.BeloppID = UtbetaldTid_Belopp.BeloppID
+                            LEFT JOIN Beloppstyp on Beloppstyp.Beloppstypkod = Belopp.Beloppstypkod
+                            WHERE utbetalning.UtbetDatum >= 20090908 AND utbetalning.UtbetDatum <= 20100120
+                            GROUP BY UtbetDatum,Beskrivning
+                            ORDER BY Utbetalning.UtbetDatum";
          
-            var query =
-                @"SELECT Utbetalning.UtbetDatum, Beloppstyp.Beskrivning, Belopp.Belopp*(UtbetaldTid.Sluttid - UtbetaldTid.StartTid+1) as Belopp
-                    FROM Utbetalning
-                    LEFT JOIN Utbetalningsplan on Utbetalningsplan.UtbetPlanID = Utbetalning.UtbetPlanID
-                    LEFT JOIN UtbetaldTid on UtbetaldTid.UtbetID = Utbetalning.UtbetID
-                    LEFT JOIN UtbetaldTid_Belopp on UtbetaldTid_Belopp.UtbetaldTidID = UtbetaldTid.UtbetTidID
-                    LEFT JOIN Belopp on Belopp.BeloppID = UtbetaldTid_Belopp.BeloppID
-                    LEFT JOIN Beloppstyp on Beloppstyp.Beloppstypkod = Belopp.Beloppstypkod
-                    GROUP BY UtbetDatum,Beskrivning
-                    ORDER BY Utbetalning.UtbetDatum
-                    ";
+
             
             var raw = SQLResult(query, "AllaDatum", "Betalning");
             
